@@ -3,16 +3,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './configs/env.config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { createDatabaseConfig } from './configs/typeorm.config';
 import { envValidationSchema } from './configs/env-validation-schema.config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
       validationSchema: envValidationSchema,
-      isGlobal: true, // Disponível em toda a aplicação
+      isGlobal: true,
     }),
 
     TypeOrmModule.forRootAsync({
@@ -21,8 +23,25 @@ import { envValidationSchema } from './configs/env-validation-schema.config';
       useFactory: (configService: ConfigService) =>
         createDatabaseConfig(configService),
     }),
+
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => [
+        {
+          ttl: configService.get<number>('rateLimit.ttl')!,
+          limit: configService.get<number>('rateLimit.limit')!,
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
