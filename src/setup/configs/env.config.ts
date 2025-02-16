@@ -1,4 +1,6 @@
-export default () => ({
+import 'dotenv/config';
+
+export const envConfig = {
   appPort: Number(process.env.APP_PORT),
 
   // Database Settings
@@ -10,7 +12,7 @@ export default () => ({
     migrations: process.env.DB_MIGRATIONS,
     password: process.env.DB_PASSWORD,
     port: Number(process.env.DB_PORT),
-    sincronize: process.env.DB_SYNCHRONIZE === 'true',
+    synchronize: process.env.DB_SYNCHRONIZE === 'true',
     type: process.env.DB_TYPE,
     username: process.env.DB_USERNAME,
   },
@@ -27,4 +29,8 @@ export default () => ({
     ttl: Number(process.env.RATE_LIMIT_TTL),
     limit: Number(process.env.RATE_LIMIT_MAX),
   },
+};
+
+export default () => ({
+  ...envConfig,
 });
