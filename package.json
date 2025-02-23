@@ -20,7 +20,9 @@
     "typeorm": "npm run build && npx typeorm -d dist/setup/configs/typeorm-cli.config.js",
     "migration:generate": "npm run typeorm -- migration:generate src/setup/database/migrations/${npm_config_name}",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "seed:main": "npx ts-node src/setup/database/seeds/main.seed.ts",
+    "seed:run": "npm run seed:main -- --name=${npm_config_name} --action=${npm_config_action}"
   },
   "dependencies": {
     "@nestjs/common": "10.4.15",
@@ -30,6 +32,9 @@
     "@nestjs/platform-express": "10.4.15",
     "@nestjs/throttler": "6.4.0",
     "@nestjs/typeorm": "11.0.0",
+    "bcrypt": "5.1.1",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.1",
     "helmet": "8.0.0",
     "joi": "17.13.3",
     "pg": "8.13.1",
@@ -41,6 +46,7 @@
     "@nestjs/cli": "10.4.9",
     "@nestjs/schematics": "10.2.3",
     "@nestjs/testing": "10.4.15",
+    "@types/bcrypt": "5.0.2",
     "@types/express": "4.17.21",
     "@types/jest": "29.5.14",
     "@types/node": "20.17.17",

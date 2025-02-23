@@ -8,6 +8,7 @@ import { envValidationSchema } from './setup/configs/env-validation-schema.confi
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
+import { ModulesModule } from './modules/modules.module';
 
 @Module({
   imports: [
@@ -34,6 +35,8 @@ import { APP_GUARD } from '@nestjs/core';
         },
       ],
     }),
+
+    ModulesModule,
   ],
   controllers: [AppController],
   providers: [

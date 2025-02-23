@@ -12,6 +12,7 @@ export const envConfig = {
     migrations: process.env.DB_MIGRATIONS,
     password: process.env.DB_PASSWORD,
     port: Number(process.env.DB_PORT),
+    seeds: process.env.DB_SEEDS,
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
     type: process.env.DB_TYPE,
     username: process.env.DB_USERNAME,
