@@ -3,6 +3,7 @@ import * as Joi from 'joi';
 export const envValidationSchema = Joi.object({
   // Server Configurations
   APP_PORT: Joi.number().required(),
+  APP_SUBJECT: Joi.string().required(),
 
   // Database Configurations
   DB_TYPE: Joi.string().valid('postgres').required(),
@@ -15,6 +16,10 @@ export const envValidationSchema = Joi.object({
   DB_LOGGING: Joi.boolean().default(true),
   DB_ENTITIES: Joi.string().required(),
   DB_MIGRATIONS: Joi.string().required(),
+
+  // JWT Configurations
+  JWT_SECRET: Joi.string().required(),
+  JWT_EXPIRATION_TIME: Joi.string().required(),
 
   // Security Configurations (CORS)
   CORS_ORIGIN: Joi.string().default('*'), // Allowing all domains by default

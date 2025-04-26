@@ -1,5 +1,6 @@
 import { CreateUserDto } from '../../../modules/users/dto/create-user.dto';
 import { ISeedInterface } from './main.seed';
+import { envConfig as eC } from '../../configs/env.config';
 import * as bcrypt from 'bcrypt';
 
 export const createAdminUserSeed = async ({
@@ -18,6 +19,7 @@ export const createAdminUserSeed = async ({
 
     default:
       const createUserDto: CreateUserDto = {
+        subjectId: `${eC.appSubject}:admin`,
         userName: 'admin',
         email: 'admin@test.com',
         password: await bcrypt.hash('qaz147852', 10),

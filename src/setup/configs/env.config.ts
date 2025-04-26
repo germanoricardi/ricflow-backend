@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 export const envConfig = {
   appPort: Number(process.env.APP_PORT),
+  appSubject: process.env.APP_SUBJECT,
 
   // Database Settings
   database: {
@@ -16,6 +17,12 @@ export const envConfig = {
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
     type: process.env.DB_TYPE,
     username: process.env.DB_USERNAME,
+  },
+
+  // JWT Settings
+  jwt: {
+    expirationTime: process.env.JWT_EXPIRATION_TIME,
+    secret: process.env.JWT_SECRET,
   },
 
   // CORS Settings
