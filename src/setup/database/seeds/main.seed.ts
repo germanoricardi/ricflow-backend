@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { dataSource } from '../../configs/typeorm.config';
-import { createAdminUserSeed } from './createAdminUserSeed';
+import { createAdminUserSeed } from './createAdminUser.seed';
 
 export interface ISeedInterface {
   name?: string;
@@ -20,7 +20,7 @@ async function seed() {
     .then(() => console.log('✅ Database connection established.'));
 
   // seeds
-  if (config.name === 'createAdminUserSeed') await createAdminUserSeed(config);
+  if (config.name === 'createAdminUser') await createAdminUserSeed(config);
 
   await config.dataSource
     .destroy()

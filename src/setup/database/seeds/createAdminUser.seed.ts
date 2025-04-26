@@ -1,5 +1,6 @@
 import { CreateUserDto } from '../../../modules/users/dto/create-user.dto';
 import { ISeedInterface } from './main.seed';
+import * as bcrypt from 'bcrypt';
 
 export const createAdminUserSeed = async ({
   name,
@@ -19,12 +20,12 @@ export const createAdminUserSeed = async ({
       const createUserDto: CreateUserDto = {
         userName: 'admin',
         email: 'admin@test.com',
-        password: 'qaz147852',
+        password: await bcrypt.hash('qaz147852', 10),
         isActive: true,
       };
 
       await userRepository
-        .save(createUserDto)
+        .save({ ...createUserDto, passwordHash: createUserDto.password })
         .then(() => console.log(`✅ ${name} successfully created.`));
       break;
   }
