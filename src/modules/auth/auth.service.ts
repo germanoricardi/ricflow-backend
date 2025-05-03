@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,16 +29,15 @@ export class AuthService {
    * @returns The user object excluding the password hash, if validation is successful
    * @throws HttpException if the username or password is invalid
    */
-  async validateUser(
-    userName: string,
-    password: string,
-  ): Promise<Omit<User, 'passwordHash'>> {
-    const user = await this.userRepository.findOne({ where: { userName } });
+  async validateUser(loginDto: LoginDto): Promise<Omit<User, 'passwordHash'>> {
+    const user = await this.userRepository.findOne({
+      where: { userName: loginDto.userName },
+    });
 
     if (
       user &&
       user.passwordHash &&
-      (await bcrypt.compare(password, user.passwordHash))
+      (await bcrypt.compare(loginDto.password, user.passwordHash))
     ) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash, ...safeUser } = user;
@@ -100,11 +100,11 @@ export class AuthService {
    * @returns An object containing new access_token and refresh_token
    * @throws HttpException if the token is expired, invalid, or the user is not found
    */
-  async refreshToken(refreshToken: RefreshTokenDto['refresh_token']) {
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
     try {
       const payload = await new JwtService({
         secret: this.configService.get('jwt.refreshSecret'),
-      }).verifyAsync(refreshToken);
+      }).verifyAsync(refreshTokenDto.refresh_token);
 
       const user = await this.userRepository.findOne({
         where: { subjectId: payload.sub },
@@ -140,9 +140,11 @@ export class AuthService {
    * @throws HttpException - If the user is not found in the database.
    */
   async requestPasswordReset(
-    email: RequestPasswordResetDto['email'],
+    requestPasswordResetDto: RequestPasswordResetDto,
   ): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email: requestPasswordResetDto.email },
+    });
 
     if (!user) {
       throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
@@ -187,12 +189,9 @@ export class AuthService {
    * @param token - The token received by email to authorize the password reset.
    * @throws HttpException - If the token is invalid or has expired.
    */
-  async resetPassword(
-    password: ResetPasswordDto['password'],
-    token: ResetPasswordDto['token'],
-  ): Promise<void> {
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<void> {
     const user = await this.userRepository.findOne({
-      where: { passwordResetToken: token },
+      where: { passwordResetToken: resetPasswordDto.token },
     });
 
     if (
@@ -206,7 +205,7 @@ export class AuthService {
       );
     }
 
-    user.passwordHash = await bcrypt.hash(password, 10);
+    user.passwordHash = await bcrypt.hash(resetPasswordDto.password, 10);
     user.passwordResetToken = null as unknown as undefined;
     user.passwordResetExpires = null as unknown as undefined;
 

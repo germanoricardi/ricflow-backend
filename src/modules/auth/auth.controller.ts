@@ -11,16 +11,13 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(
-      loginDto.userName,
-      loginDto.password,
-    );
+    const user = await this.authService.validateUser(loginDto);
     return this.authService.login(user);
   }
 
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto.refresh_token);
+    return this.authService.refreshToken(refreshTokenDto);
   }
 
   @Post('request-password-reset')
@@ -28,7 +25,7 @@ export class AuthController {
     @Body()
     requestPasswordResetDto: RequestPasswordResetDto,
   ) {
-    await this.authService.requestPasswordReset(requestPasswordResetDto.email);
+    await this.authService.requestPasswordReset(requestPasswordResetDto);
     return {
       message: 'Se o usuário existir, um e-mail será enviado com instruções.',
     };
@@ -36,10 +33,7 @@ export class AuthController {
 
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    await this.authService.resetPassword(
-      resetPasswordDto.token,
-      resetPasswordDto.password,
-    );
+    await this.authService.resetPassword(resetPasswordDto);
     return { message: 'Senha redefinida com sucesso.' };
   }
 }
