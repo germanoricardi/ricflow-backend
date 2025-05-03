@@ -23,6 +23,8 @@ export const envConfig = {
   jwt: {
     expirationTime: process.env.JWT_EXPIRATION_TIME,
     secret: process.env.JWT_SECRET,
+    refreshExpirationTime: process.env.JWT_REFRESH_EXPIRATION_TIME,
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
   },
 
   // CORS Settings
