@@ -4,7 +4,11 @@ import { User } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -96,7 +100,7 @@ export class AuthService {
    * @returns An object containing new access_token and refresh_token
    * @throws HttpException if the token is expired, invalid, or the user is not found
    */
-  async refreshToken(refreshToken: string) {
+  async refreshToken(refreshToken: RefreshTokenDto['refresh_token']) {
     try {
       const payload = await new JwtService({
         secret: this.configService.get('jwt.refreshSecret'),
@@ -127,5 +131,82 @@ export class AuthService {
           break;
       }
     }
+  }
+
+  /**
+   * Handles password reset requests by generating a reset token and sending an email with the reset link.
+   *
+   * @param email - The email address of the user requesting the password reset.
+   * @throws HttpException - If the user is not found in the database.
+   */
+  async requestPasswordReset(
+    email: RequestPasswordResetDto['email'],
+  ): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
+    }
+
+    const token = crypto.randomUUID();
+    const expiration = new Date();
+    expiration.setHours(expiration.getHours() + 1); // TODO: Jogar para o .env. Expira em 1 hora
+
+    user.passwordResetToken = token;
+    user.passwordResetExpires = expiration;
+    await this.userRepository.save(user);
+
+    const resetUrl = `http://localhost:3010/auth/?token=${token}`;
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'luther.schinner15@ethereal.email',
+        pass: 'vwkfDKq291wqkaq4YE',
+      },
+    });
+
+    await transporter.sendMail({
+      from: 'no-reply@ricflow.com',
+      to: user.email,
+      subject: 'Recuperação de Senha',
+      text: `Você solicitou uma nova senha. Clique no link para redefinir: ${resetUrl}`,
+      html: `<p>Você solicitou uma nova senha.</p><p><a href="${resetUrl}">Clique aqui para redefinir</a></p>`,
+    });
+  }
+
+  /**
+   * Resets the user's password using a valid token and a new password.
+   *
+   * @param password - The new password to set.
+   * @param token - The token received by email to authorize the password reset.
+   * @throws HttpException - If the token is invalid or has expired.
+   */
+  async resetPassword(
+    password: ResetPasswordDto['password'],
+    token: ResetPasswordDto['token'],
+  ): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { passwordResetToken: token },
+    });
+
+    if (
+      !user ||
+      !user.passwordResetExpires ||
+      user.passwordResetExpires < new Date()
+    ) {
+      throw new HttpException(
+        'Token inválido ou expirado',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    user.passwordHash = await bcrypt.hash(password, 10);
+    user.passwordResetToken = null as unknown as undefined;
+    user.passwordResetExpires = null as unknown as undefined;
+
+    await this.userRepository.save(user);
   }
 }
