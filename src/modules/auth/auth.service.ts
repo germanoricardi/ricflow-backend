@@ -13,7 +13,10 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(userName: string, password: string): Promise<User> {
+  async validateUser(
+    userName: string,
+    password: string,
+  ): Promise<Omit<User, 'passwordHash'>> {
     const user = await this.userRepository.findOne({ where: { userName } });
 
     if (
@@ -32,7 +35,7 @@ export class AuthService {
     );
   }
 
-  async login(user: User) {
+  async login(user: Omit<User, 'passwordHash'>) {
     const payload = {
       sub: user.subjectId,
       userName: user.userName,
