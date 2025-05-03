@@ -39,6 +39,24 @@ export const envConfig = {
     ttl: Number(process.env.RATE_LIMIT_TTL),
     limit: Number(process.env.RATE_LIMIT_MAX),
   },
+
+  // Password Reset Settings
+  passwordReset: {
+    url: process.env.PASSWORD_RESET_URL,
+    expirationHour: Number(process.env.PASSWORD_RESET_EXPIRATION_HOUR),
+  },
+
+  // Email Settings
+  email: {
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: process.env.EMAIL_SECURE === 'true',
+    auth: {
+      user: process.env.EMAIL_AUTH_USER,
+      pass: process.env.EMAIL_AUTH_PASS,
+    },
+    from: process.env.EMAIL_FROM,
+  },
 };
 
 export default () => ({

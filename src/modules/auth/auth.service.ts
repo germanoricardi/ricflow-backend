@@ -150,26 +150,29 @@ export class AuthService {
 
     const token = crypto.randomUUID();
     const expiration = new Date();
-    expiration.setHours(expiration.getHours() + 1); // TODO: Jogar para o .env. Expira em 1 hora
+    expiration.setHours(
+      expiration.getHours() +
+        this.configService.get('passwordReset.expirationHour'),
+    );
 
     user.passwordResetToken = token;
     user.passwordResetExpires = expiration;
     await this.userRepository.save(user);
 
-    const resetUrl = `http://localhost:3010/auth/?token=${token}`;
+    const resetUrl = `${this.configService.get('passwordReset.url')}?token=${token}`;
 
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
+      host: this.configService.get('email.host'),
+      port: this.configService.get('email.port'),
+      secure: this.configService.get('email.secure'),
       auth: {
-        user: 'luther.schinner15@ethereal.email',
-        pass: 'vwkfDKq291wqkaq4YE',
+        user: this.configService.get('email.auth.user'),
+        pass: this.configService.get('email.auth.pass'),
       },
     });
 
     await transporter.sendMail({
-      from: 'no-reply@ricflow.com',
+      from: this.configService.get('email.from'),
       to: user.email,
       subject: 'Recuperação de Senha',
       text: `Você solicitou uma nova senha. Clique no link para redefinir: ${resetUrl}`,

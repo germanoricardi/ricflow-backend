@@ -31,4 +31,16 @@ export const envValidationSchema = Joi.object({
   // Rate Limiting Configurations
   RATE_LIMIT_TTL: Joi.number().default(60).min(1), // Request window time (in seconds)
   RATE_LIMIT_MAX: Joi.number().default(10).min(1), // Maximum allowed requests in the time window
+
+  // Password Reset Configurations
+  PASSWORD_RESET_URL: Joi.string().uri().required(),
+  PASSWORD_RESET_EXPIRATION_HOUR: Joi.number().integer().min(1).default(1),
+
+  // Email Configurations
+  EMAIL_HOST: Joi.string().hostname().required(),
+  EMAIL_PORT: Joi.number().port().required(),
+  EMAIL_SECURE: Joi.boolean().required().default(false),
+  EMAIL_AUTH_USER: Joi.string().required(),
+  EMAIL_AUTH_PASS: Joi.string().required(),
+  EMAIL_FROM: Joi.string().email().required(),
 });
