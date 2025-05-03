@@ -57,7 +57,9 @@ export class AuthService {
 
     const refresh_token = new JwtService({
       secret: this.configService.get('jwt.refreshSecret'),
-    }).sign(refreshPayload);
+    }).sign(refreshPayload, {
+      expiresIn: this.configService.get('jwt.refreshExpirationTime'),
+    });
 
     return { access_token, refresh_token };
   }
@@ -67,18 +69,35 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    const payload = await new JwtService({
-      secret: this.configService.get('jwt.refreshSecret'),
-    }).verifyAsync(refreshToken);
+    try {
+      const payload = await new JwtService({
+        secret: this.configService.get('jwt.refreshSecret'),
+      }).verifyAsync(refreshToken);
 
-    const user = await this.userRepository.findOne({
-      where: { subjectId: payload.sub },
-    });
+      const user = await this.userRepository.findOne({
+        where: { subjectId: payload.sub },
+      });
 
-    if (!user) {
-      throw new HttpException('Token inválido', HttpStatus.UNAUTHORIZED);
+      if (!user) {
+        throw new HttpException(
+          'Usuário não identificado, faça o login novamente',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      return this.generateTokens(user);
+    } catch (error) {
+      switch (error?.message) {
+        case 'jwt expired':
+          throw new HttpException(
+            'Token expirado, faça o login novamente',
+            HttpStatus.UNAUTHORIZED,
+          );
+          break;
+
+        default:
+          throw new HttpException(error?.message, HttpStatus.UNAUTHORIZED);
+          break;
+      }
     }
-
-    return this.generateTokens(user);
   }
 }
