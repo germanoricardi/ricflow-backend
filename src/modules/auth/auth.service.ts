@@ -15,6 +15,15 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
+  /**
+   * Validates user credentials by checking if the provided username and password
+   * match a record in the database.
+   *
+   * @param userName - The username provided by the user
+   * @param password - The plain text password provided by the user
+   * @returns The user object excluding the password hash, if validation is successful
+   * @throws HttpException if the username or password is invalid
+   */
   async validateUser(
     userName: string,
     password: string,
@@ -37,6 +46,12 @@ export class AuthService {
     );
   }
 
+  /**
+   * Generates access and refresh JWT tokens for the authenticated user.
+   *
+   * @param user - The user object excluding the password hash
+   * @returns An object containing the access_token and refresh_token
+   */
   generateTokens(user: Omit<User, 'passwordHash'>) {
     const accessPayload = {
       sub: user.subjectId,
@@ -64,10 +79,23 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
+  /**
+   * Authenticates the user and returns access and refresh tokens.
+   *
+   * @param user - The user object excluding the password hash
+   * @returns An object containing the access_token and refresh_token
+   */
   async login(user: Omit<User, 'passwordHash'>) {
     return this.generateTokens(user);
   }
 
+  /**
+   * Validates the provided refresh token and generates new tokens.
+   *
+   * @param refreshToken - The refresh token provided by the client
+   * @returns An object containing new access_token and refresh_token
+   * @throws HttpException if the token is expired, invalid, or the user is not found
+   */
   async refreshToken(refreshToken: string) {
     try {
       const payload = await new JwtService({
