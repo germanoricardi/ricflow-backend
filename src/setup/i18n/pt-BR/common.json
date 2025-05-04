@@ -1,3 +1,6 @@
 {
-  "greeting": "Olá!"
+  "app": {
+    "name": "RicFlow CMS",
+    "description": "O CMS flexível para qualquer projeto."
+  }
 }
