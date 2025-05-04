@@ -10,6 +10,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginDto } from './dto/login.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private i18nService: I18nService,
   ) {}
 
   /**
@@ -45,7 +47,7 @@ export class AuthService {
     }
 
     throw new HttpException(
-      'Usuário ou senha inválidos',
+      this.i18nService.translate('common.modules.auth.invalidCredentials'),
       HttpStatus.UNAUTHORIZED,
     );
   }
@@ -112,7 +114,7 @@ export class AuthService {
 
       if (!user) {
         throw new HttpException(
-          'Usuário não identificado, faça o login novamente',
+          this.i18nService.translate('common.modules.auth.userNotIdentified'),
           HttpStatus.UNAUTHORIZED,
         );
       }
@@ -121,7 +123,7 @@ export class AuthService {
       switch (error?.message) {
         case 'jwt expired':
           throw new HttpException(
-            'Token expirado, faça o login novamente',
+            this.i18nService.translate('common.modules.auth.tokenExpired'),
             HttpStatus.UNAUTHORIZED,
           );
           break;
@@ -147,7 +149,10 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        this.i18nService.translate('common.modules.auth.userNotFound'),
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     const token = crypto.randomUUID();
@@ -176,9 +181,21 @@ export class AuthService {
     await transporter.sendMail({
       from: this.configService.get('email.from'),
       to: user.email,
-      subject: 'Recuperação de Senha',
-      text: `Você solicitou uma nova senha. Clique no link para redefinir: ${resetUrl}`,
-      html: `<p>Você solicitou uma nova senha.</p><p><a href="${resetUrl}">Clique aqui para redefinir</a></p>`,
+      subject: this.i18nService.translate(
+        'common.modules.auth.requestPasswordEmailStructure.subject',
+      ),
+      text: this.i18nService.translate(
+        'common.modules.auth.requestPasswordEmailStructure.text',
+        {
+          args: { resetUrl },
+        },
+      ),
+      html: this.i18nService.translate(
+        'common.modules.auth.requestPasswordEmailStructure.html',
+        {
+          args: { resetUrl },
+        },
+      ),
     });
   }
 
@@ -200,7 +217,7 @@ export class AuthService {
       user.passwordResetExpires < new Date()
     ) {
       throw new HttpException(
-        'Token inválido ou expirado',
+        this.i18nService.translate('common.modules.auth.invalidOrExpiredToken'),
         HttpStatus.BAD_REQUEST,
       );
     }

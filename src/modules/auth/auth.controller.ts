@@ -4,10 +4,14 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
@@ -25,15 +29,19 @@ export class AuthController {
     @Body()
     requestPasswordResetDto: RequestPasswordResetDto,
   ) {
-    await this.authService.requestPasswordReset(requestPasswordResetDto);
-    return {
-      message: 'Se o usuário existir, um e-mail será enviado com instruções.',
-    };
+    return await this.authService
+      .requestPasswordReset(requestPasswordResetDto)
+      .then(() => ({
+        message: this.i18n.translate(
+          'common.modules.auth.requestPasswordNotice',
+        ),
+      }));
   }
 
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    await this.authService.resetPassword(resetPasswordDto);
-    return { message: 'Senha redefinida com sucesso.' };
+    return await this.authService.resetPassword(resetPasswordDto).then(() => ({
+      message: this.i18n.translate('common.modules.auth.resetPasswordSuccess'),
+    }));
   }
 }

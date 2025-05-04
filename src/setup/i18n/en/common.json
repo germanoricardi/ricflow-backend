@@ -2,5 +2,21 @@
   "app": {
     "name": "RicFlow CMS",
     "description": "The flexible CMS for any project."
+  },
+  "modules": {
+    "auth": {
+      "invalidCredentials": "Invalid username or password",
+      "invalidOrExpiredToken": "Invalid or expired token",
+      "requestPasswordNotice": "If the user exists, an email will be sent with instructions.",
+      "resetPasswordSuccess": "Password successfully reset. You can log in with the new password.",
+      "tokenExpired": "Token expired, please log in again",
+      "userNotFound": "User not found",
+      "userNotIdentified": "User not identified, please log in again",
+      "requestPasswordEmailStructure": {
+        "subject": "Password Recovery",
+        "text": "You requested a new password. Click the link to reset it: {resetUrl}",
+        "html": "<p>You requested a new password.</p><p>To reset your password, click the link <a href='{resetUrl}'>{resetUrl}</a></p>"
+      }
+    }
   }
 }
